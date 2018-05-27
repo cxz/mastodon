@@ -525,6 +525,28 @@ RSpec.describe Account, type: :model do
     end
   end
 
+  describe '#statuses_count' do
+    subject { Fabricate(:account) }
+
+    it 'counts statuses' do
+      Fabricate(:status, account: subject)
+      Fabricate(:status, account: subject)
+      expect(subject.statuses_count).to eq 2
+    end
+
+    it 'does not count direct statuses' do
+      Fabricate(:status, account: subject, visibility: :direct)
+      expect(subject.statuses_count).to eq 0
+    end
+
+    it 'is decremented when status is removed' do
+      status = Fabricate(:status, account: subject)
+      expect(subject.statuses_count).to eq 1
+      status.destroy
+      expect(subject.statuses_count).to eq 0
+    end
+  end
+
   describe '.following_map' do
     it 'returns an hash' do
       expect(Account.following_map([], 1)).to be_a Hash
