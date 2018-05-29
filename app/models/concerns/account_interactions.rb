@@ -4,6 +4,17 @@ module AccountInteractions
   extend ActiveSupport::Concern
 
   class_methods do
+    def followers_for_local_distribution
+      followers.local
+               .joins(:user)
+               .where('users.current_sign_in_at > ?', User::ACTIVE_DURATION.ago)
+    end
+
+    def lists_for_local_distribution
+      lists.joins(account: :user)
+           .where('users.current_sign_in_at > ?', User::ACTIVE_DURATION.ago)
+    end
+
     def following_map(target_account_ids, account_id)
       Follow.where(target_account_id: target_account_ids, account_id: account_id).each_with_object({}) do |follow, mapping|
         mapping[follow.target_account_id] = {
